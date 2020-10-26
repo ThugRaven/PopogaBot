@@ -44,7 +44,7 @@ module.exports = {
                 });
                 console.log('Player 1');
                 console.log(players);
-                message.channel.send(`Player 1: ${players[0].user.username}, waiting for second user. Type \`!xo play\` to play`)
+                message.channel.send(`Player 1: ${players[0].user.username}, waiting for second user. Type \`!xo play\` to play`);
             }
             else if(message.author.id == players[0].user.id){
                 return message.reply('You can\'t play with yourself!');
