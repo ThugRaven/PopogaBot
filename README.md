@@ -1,0 +1,2 @@
+# PopogaBot
+Discord.js bot
