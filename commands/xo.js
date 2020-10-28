@@ -56,7 +56,7 @@ module.exports = {
     
                 collector.on('collect', m => {
                     //console.log(`Collected ${m.content}\n\n${m.author} == ${players[0].user} - ${m.author == players[0].user ? true : false} `);
-                    if(m.author.id != players[0].user.id && !m.author.bot && players.length < 2){
+                    if(m.author.id != players[0].user.id && !m.author.bot && players.length < 2 && argument === 'play'){
                         players.push({
                             user: m.author,
                             id: m.author.id,
