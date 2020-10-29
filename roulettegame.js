@@ -13,9 +13,10 @@ class RouletteGame {
         this.message = null;
         this.bullet = new Array();
         this.pos = 0;
+        this.type = -1;
     }
 
-    newGame(msg, players) {
+    newGame(msg, players, type) {
         if (this.inGame)
             return;
 
@@ -25,11 +26,12 @@ class RouletteGame {
         this.winner = null;
         this.message = msg;
         this.pos = 0;
+        this.type = type;
 
         this.players = players;
         this.bullet = new Array(6).fill(false);
         this.bullet[Math.floor(Math.random() * 6)] = true;
-        //console.log(this.bullet);
+        console.log(this.bullet);
 
         const embed = new Discord.MessageEmbed()
             .setColor('#0099ff')
@@ -56,8 +58,12 @@ class RouletteGame {
     step() {
         if(isOk){
             console.log('Step');
-            // this.bullet = new Array(6).fill(false);
-            // this.bullet[Math.floor(Math.random() * 6)] = true;
+
+            if(this.type === '2'){
+                this.bullet = new Array(6).fill(false);
+                this.bullet[Math.floor(Math.random() * 6)] = true;
+            }
+            //console.log(this.bullet);
 
             this.round++;
             this.pos++;
@@ -91,12 +97,20 @@ class RouletteGame {
     check() {
         let player = this.players[this.round % this.players.length].user.username;
 
-        if(this.bullet[this.pos] == true){
-            this.winner = player;
-            return true;
+        if(this.type === '2'){
+            if(this.bullet[this.pos % 6] == true){
+                this.winner = player;
+                return true;
+            }
+            else return false;
         }
-        else return false;
-        
+        else{
+            if(this.bullet[this.pos] == true){
+                this.winner = player;
+                return true;
+            }
+            else return false;
+        }
     }
 
     gameOver() {
@@ -133,7 +147,7 @@ class RouletteGame {
                         console.log('Restart');
                         //Remove message for performance
                         this.gameEmbed.delete({ timeout: 2000 });
-                        this.newGame(this.message, this.players);
+                        this.newGame(this.message, this.players, this.type);
                     }
                     else if(reaction.emoji.name == '❌'){
                         console.log('Remove');
@@ -141,6 +155,7 @@ class RouletteGame {
                     }
                 })
                 .catch(collected => {
+                    console.error(collected);
                     this.gameEmbed.delete({ timeout: 2000 });
                     console.log('error/removed due to timeout');
                 });
@@ -159,6 +174,9 @@ class RouletteGame {
 
                 if(reaction.emoji.name == '🔫'){
                     console.log(`Shoot ${this.pos}`);
+                    if(this.type === '2'){
+                        console.log(`Shoot % ${this.pos % 6}`);
+                    }
                     this.pick(user);
                 }
 

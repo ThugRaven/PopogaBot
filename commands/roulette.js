@@ -28,11 +28,18 @@ module.exports = {
         const name = args[0].toLowerCase();
         const command = commands.get(name) || commands.find(c => c.args && c.args.includes(name));
 
+        const argument = args[0].toLowerCase();
+        const gameType = args[1];
+
         if (!command) {
             return message.reply('That\'s not a valid command!');
         }
 
-        const argument = args[0].toLowerCase();
+        if(argument === 'start' && gameType == null){
+            return message.reply('That\'s not a valid command!');
+        }
+
+        
 
         if(argument === 'play'){
             console.log('TEST');
@@ -53,7 +60,12 @@ module.exports = {
         }
         else if(argument === 'start'){
             if(players.length >= 1){
-                rouletteGame.newGame(message, players);
+                if(gameType === '1'){
+                    rouletteGame.newGame(message, players, '1');
+                }
+                else if(gameType === '2'){
+                    rouletteGame.newGame(message, players, '2');
+                }
             }
             else{
                 message.channel.send('You can\'t start a game without any players!');
