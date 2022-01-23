@@ -5,7 +5,9 @@ const { prefix, token } = require('./config.json');
 const bot = new Discord.Client();
 bot.commands = new Discord.Collection();
 
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs
+	.readdirSync('./commands')
+	.filter((file) => file.endsWith('.js'));
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
@@ -15,22 +17,25 @@ for (const file of commandFiles) {
 const cooldowns = new Discord.Collection();
 
 bot.on('ready', () => {
-    console.log('This bot is online!');
-})
+	console.log('Bot is online!');
+});
 
-bot.on('message', message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+bot.on('message', (message) => {
+	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
-	const command = bot.commands.get(commandName)
-		|| bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+	const command =
+		bot.commands.get(commandName) ||
+		bot.commands.find(
+			(cmd) => cmd.aliases && cmd.aliases.includes(commandName),
+		);
 
 	if (!command) return;
 
 	if (command.guildOnly && message.channel.type === 'dm') {
-		return message.reply('I can\'t execute that command inside DMs!');
+		return message.reply("I can't execute that command inside DMs!");
 	}
 
 	if (command.args && !args.length) {
@@ -56,7 +61,11 @@ bot.on('message', message => {
 
 		if (now < expirationTime) {
 			const timeLeft = (expirationTime - now) / 1000;
-			return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
+			return message.reply(
+				`Please wait ${timeLeft.toFixed(
+					1,
+				)} more second(s) before reusing the \`${command.name}\` command.`,
+			);
 		}
 	}
 
@@ -70,6 +79,5 @@ bot.on('message', message => {
 		message.reply('There was an error trying to execute that command!');
 	}
 });
-
 
 bot.login(token);

@@ -5,9 +5,14 @@ const HEIGHT = 3;
 const gameBoard = [];
 
 const combinations = [
-    [0,1,2], [3,4,5], [6,7,8],
-    [0,3,6], [1,4,7], [2,5,8],
-    [0,4,8], [2,4,6]
+	[0, 1, 2],
+	[3, 4, 5],
+	[6, 7, 8],
+	[0, 3, 6],
+	[1, 4, 7],
+	[2, 5, 8],
+	[0, 4, 8],
+	[2, 4, 6],
 ];
 
 // let moves = {
@@ -26,119 +31,129 @@ const XSign = ':regional_indicator_x:';
 const OSign = ':regional_indicator_o:';
 
 class XOGame {
-    constructor() {
-        this.players = new Array();
-        this.round = 0;
-        this.turn = this.round % 2 === 0 ? Player2 : Player1;
-        this.gameEmbed = null;
-        this.inGame = false;
-        this.winner = null;
-        this.moves = [];
-        this.message = null;
-        for(let x = 0; x < WIDTH; x++){
-            for(let y = 0; y < HEIGHT; y++){
-                gameBoard[x * WIDTH + y] = DefSign;
-            }
-        }
-    }
+	constructor() {
+		this.players = new Array();
+		this.round = 0;
+		this.turn = this.round % 2 === 0 ? Player2 : Player1;
+		this.gameEmbed = null;
+		this.inGame = false;
+		this.winner = null;
+		this.moves = [];
+		this.message = null;
+		for (let x = 0; x < WIDTH; x++) {
+			for (let y = 0; y < HEIGHT; y++) {
+				gameBoard[x * WIDTH + y] = DefSign;
+			}
+		}
+	}
 
-    gameBoardToString() {
-        let str = "";
-        for(let x = 0; x < WIDTH; x++){
-            for(let y = 0; y < HEIGHT; y++){
-                let sign;
-                if(gameBoard[x * WIDTH + y] == 'D'){
-                    sign = DSign;
-                }
-                else if(gameBoard[x * WIDTH + y] == 'X'){
-                    sign = XSign;
-                }
-                else if(gameBoard[x * WIDTH + y] == 'O'){
-                    sign = OSign;
-                }
+	gameBoardToString() {
+		let str = '';
+		for (let x = 0; x < WIDTH; x++) {
+			for (let y = 0; y < HEIGHT; y++) {
+				let sign;
+				if (gameBoard[x * WIDTH + y] == 'D') {
+					sign = DSign;
+				} else if (gameBoard[x * WIDTH + y] == 'X') {
+					sign = XSign;
+				} else if (gameBoard[x * WIDTH + y] == 'O') {
+					sign = OSign;
+				}
 
-                str += sign;
-            }
-            str += '\n';
-        }
-        return str;
-    }
+				str += sign;
+			}
+			str += '\n';
+		}
+		return str;
+	}
 
-    newGame(msg, players) {
-        if (this.inGame)
-            return;
+	newGame(msg, players) {
+		if (this.inGame) return;
 
-        console.log('New game');
-        this.inGame = true;
-        this.round = 0;
-        this.winner = null;
-        this.moves = [];
-        this.message = msg;
+		console.log('New game');
+		this.inGame = true;
+		this.round = 0;
+		this.winner = null;
+		this.moves = [];
+		this.message = msg;
 
-        this.players = players;
+		this.players = players;
 
-        for(let x = 0; x < WIDTH; x++){
-            for(let y = 0; y < HEIGHT; y++){
-                gameBoard[x * WIDTH + y] = DefSign;
-            }
-        }
+		for (let x = 0; x < WIDTH; x++) {
+			for (let y = 0; y < HEIGHT; y++) {
+				gameBoard[x * WIDTH + y] = DefSign;
+			}
+		}
 
-        const embed = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle('Tic Tac Toe')
-            .setDescription(`Wait for reactions to come up...\n\n${this.gameBoardToString()}`);
+		const embed = new Discord.MessageEmbed()
+			.setColor('#0099ff')
+			.setTitle('Tic Tac Toe')
+			.setDescription(
+				`Wait for reactions to come up...\n\n${this.gameBoardToString()}`,
+			);
 
-        msg.channel.send(embed).then(emsg => {
-            this.gameEmbed = emsg;
-            this.gameEmbed.react('1️⃣');
-            this.gameEmbed.react('2️⃣');
-            this.gameEmbed.react('3️⃣');
-            this.gameEmbed.react('🟥');
-            this.gameEmbed.react('4️⃣');
-            this.gameEmbed.react('5️⃣');
-            this.gameEmbed.react('6️⃣');
-            this.gameEmbed.react('🟩');
-            this.gameEmbed.react('7️⃣');
-            this.gameEmbed.react('8️⃣');
-            this.gameEmbed.react('9️⃣').then(() => {
-                let sign = this.turn == Player1 ? XSign : OSign;
-                const editEmbed = new Discord.MessageEmbed()
-                .setColor('#0099ff')
-                .setTitle('Tic Tac Toe')
-                //.setAuthor(`${this.turn}`)
-                //.setDescription(this.gameBoardToString());
-                //.setDescription(this.gameBoardToString() + "\n" + this.players[0].user.username);
-                .setDescription(`${sign} - ${this.turn == this.players[0].sign ? this.players[0].user.username : this.players[1].user.username}\n\n${this.gameBoardToString()}`);
-                this.gameEmbed.edit(editEmbed);
-            })
+		msg.channel.send(embed).then((emsg) => {
+			this.gameEmbed = emsg;
+			this.gameEmbed.react('1️⃣');
+			this.gameEmbed.react('2️⃣');
+			this.gameEmbed.react('3️⃣');
+			this.gameEmbed.react('🟥');
+			this.gameEmbed.react('4️⃣');
+			this.gameEmbed.react('5️⃣');
+			this.gameEmbed.react('6️⃣');
+			this.gameEmbed.react('🟩');
+			this.gameEmbed.react('7️⃣');
+			this.gameEmbed.react('8️⃣');
+			this.gameEmbed.react('9️⃣').then(() => {
+				const sign = this.turn == Player1 ? XSign : OSign;
+				const editEmbed = new Discord.MessageEmbed()
+					.setColor('#0099ff')
+					.setTitle('Tic Tac Toe')
+					// .setAuthor(`${this.turn}`)
+					// .setDescription(this.gameBoardToString());
+					// .setDescription(this.gameBoardToString() + "\n" + this.players[0].user.username);
+					.setDescription(
+						`${sign} - ${
+							this.turn == this.players[0].sign
+								? this.players[0].user.username
+								: this.players[1].user.username
+						}\n\n${this.gameBoardToString()}`,
+					);
+				this.gameEmbed.edit(editEmbed);
+			});
 
-            this.waitForReaction();
-        });
-    }
+			this.waitForReaction();
+		});
+	}
 
-    step() {
-        if(isOk){
-            this.round++;
-            this.turn = this.round % 2 === 0 ? Player2 : Player1;
-    
-            let sign = this.turn == Player1 ? XSign : OSign;
-            const editEmbed = new Discord.MessageEmbed()
-                .setColor('#0099ff')
-                .setTitle('Tic Tac Toe')
-                //.setAuthor(`${this.turn}`)
-                .setDescription(`${sign} - ${this.turn == this.players[0].sign ? this.players[0].user.username : this.players[1].user.username}\n\n${this.gameBoardToString()}`);
-            this.gameEmbed.edit(editEmbed);
-    
-        }
-        this.waitForReaction();
-    }
+	step() {
+		if (isOk) {
+			this.round++;
+			this.turn = this.round % 2 === 0 ? Player2 : Player1;
 
-    equals3(a,b,c){
-        return (a == b && b == c && a != DefSign);
-    }
+			const sign = this.turn == Player1 ? XSign : OSign;
+			const editEmbed = new Discord.MessageEmbed()
+				.setColor('#0099ff')
+				.setTitle('Tic Tac Toe')
+				// .setAuthor(`${this.turn}`)
+				.setDescription(
+					`${sign} - ${
+						this.turn == this.players[0].sign
+							? this.players[0].user.username
+							: this.players[1].user.username
+					}\n\n${this.gameBoardToString()}`,
+				);
+			this.gameEmbed.edit(editEmbed);
+		}
+		this.waitForReaction();
+	}
 
-    checkBoard() {
-        /*
+	equals3(a, b, c) {
+		return a == b && b == c && a != DefSign;
+	}
+
+	checkBoard() {
+		/*
             [x][y]
             x
             x
@@ -147,145 +162,196 @@ class XOGame {
             yyy
         */
 
-        let isDone = true;
-        //List of moves
-        for(let x = 0; x < WIDTH; x++){
-            this.moves[x] = [];
-            for(let y = 0; y < HEIGHT; y++){
-                this.moves[x][y] = gameBoard[x * HEIGHT + y];
-                if(this.moves[x][y] == DefSign) isDone = false;
-            }
-        }
-        //console.log(this.moves);
-        
-        //Horizontal
-        for(let x = 0; x < WIDTH; x++){
-            if(this.equals3(this.moves[x][0], this.moves[x][1], this.moves[x][2])){
-                console.log(`Test ${this.moves[x][0]} ${this.moves[x][1]} ${this.moves[x][2]}`);
-                console.log('1');
-                this.winner = this.moves[x][0];
-            }
-        }
+		let isDone = true;
+		// List of moves
+		for (let x = 0; x < WIDTH; x++) {
+			this.moves[x] = [];
+			for (let y = 0; y < HEIGHT; y++) {
+				this.moves[x][y] = gameBoard[x * HEIGHT + y];
+				if (this.moves[x][y] == DefSign) isDone = false;
+			}
+		}
+		// console.log(this.moves);
 
-        //Vertical
-        for(let x = 0; x < WIDTH; x++){
-            if(this.equals3(this.moves[0][x], this.moves[1][x], this.moves[2][x])){
-                this.winner = this.moves[0][x];
-                console.log('2');
-            }
-        }
+		// Horizontal
+		for (let x = 0; x < WIDTH; x++) {
+			if (this.equals3(this.moves[x][0], this.moves[x][1], this.moves[x][2])) {
+				console.log(
+					`Test ${this.moves[x][0]} ${this.moves[x][1]} ${this.moves[x][2]}`,
+				);
+				console.log('1');
+				this.winner = this.moves[x][0];
+			}
+		}
 
-        //Diagonal Top-Bot LR
-        if(this.equals3(this.moves[0][0], this.moves[1][1], this.moves[2][2])){
-            this.winner = this.moves[0][0];
-            console.log('3');
-        }
+		// Vertical
+		for (let x = 0; x < WIDTH; x++) {
+			if (this.equals3(this.moves[0][x], this.moves[1][x], this.moves[2][x])) {
+				this.winner = this.moves[0][x];
+				console.log('2');
+			}
+		}
 
-        //Diagonal Top-Bot RL
-        if(this.equals3(this.moves[2][0], this.moves[1][1], this.moves[0][2])){
-            this.winner = this.moves[2][0];
-            console.log('4');
-        }
+		// Diagonal Top-Bot LR
+		if (this.equals3(this.moves[0][0], this.moves[1][1], this.moves[2][2])) {
+			this.winner = this.moves[0][0];
+			console.log('3');
+		}
 
-        if(this.winner != null){
-            console.log('Winner: ' + this.winner);
-            if(this.players[0].sign == this.winner){
-                this.winner = this.players[0].user.username;
-            }
-            else this.winner = this.players[1].user.username;
-            return true;
-        }
-        else if(isDone){
-            this.winner = 'Tie';
-            return true;
-        }
-        else return false;
-    }
+		// Diagonal Top-Bot RL
+		if (this.equals3(this.moves[2][0], this.moves[1][1], this.moves[0][2])) {
+			this.winner = this.moves[2][0];
+			console.log('4');
+		}
 
-    gameOver() {
-        this.inGame = false;
-        const editEmbed = new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle('Tic Tac Toe')
-            .setDescription("GAME OVER!\nWinner: " + this.winner + "\n\nPress 🔁 to restart")
-            .setTimestamp();
-        this.gameEmbed.edit(editEmbed);
+		if (this.winner != null) {
+			console.log('Winner: ' + this.winner);
+			if (this.players[0].sign == this.winner) {
+				this.winner = this.players[0].user.username;
+			} else {
+				this.winner = this.players[1].user.username;
+			}
+			return true;
+		} else if (isDone) {
+			this.winner = 'Tie';
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-        const filter = (reaction, user) => {
-           return ['🔁'].includes(reaction.emoji.name) && user.id !== this.gameEmbed.author.id;
-        };
+	gameOver() {
+		this.inGame = false;
+		const editEmbed = new Discord.MessageEmbed()
+			.setColor('#0099ff')
+			.setTitle('Tic Tac Toe')
+			.setDescription(
+				'GAME OVER!\nWinner: ' + this.winner + '\n\nPress 🔁 to restart',
+			)
+			.setTimestamp();
+		this.gameEmbed.edit(editEmbed);
 
-        this.gameEmbed.react('🔁');
-        this.gameEmbed.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
-            .then(collected => {
-                const reaction = collected.first();
-        
-                if (reaction.emoji.name == '🔁') {
-                    console.log('Restart');
-                    this.newGame(this.message, this.players);
-                }
-            })
-            .catch(collected => {
-                console.log('error');
-            });
-        //this.gameEmbed.reactions.removeAll()
-    }
+		const filter = (reaction, user) => {
+			return (
+				['🔁'].includes(reaction.emoji.name) &&
+				user.id !== this.gameEmbed.author.id
+			);
+		};
 
-    filter(reaction, user) {
-        return ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'].includes(reaction.emoji.name) && user.id !== this.gameEmbed.author.id;
-    }
+		this.gameEmbed.react('🔁');
+		this.gameEmbed
+			.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+			.then((collected) => {
+				const reaction = collected.first();
 
-    waitForReaction() {
-        this.gameEmbed.awaitReactions((reaction, user) => this.filter(reaction, user), { max: 1, errors: ['time'] })
-            .then(collected => {
-                const reaction = collected.first();
-                const user = reaction.users.cache.filter(user => user.id !== this.gameEmbed.author.id).first()
+				if (reaction.emoji.name == '🔁') {
+					console.log('Restart');
+					this.newGame(this.message, this.players);
+				}
+			})
+			.catch(() => {
+				console.log('error');
+			});
+		// this.gameEmbed.reactions.removeAll()
+	}
 
-                switch(reaction.emoji.name){
-                    case '1️⃣': this.pick(0, user); break;
-                    case '2️⃣': this.pick(1, user); break;
-                    case '3️⃣': this.pick(2, user); break;
-                    case '🟥': console.log('ble'); break;
-                    case '4️⃣': this.pick(3, user); break;
-                    case '5️⃣': this.pick(4, user); break;
-                    case '6️⃣': this.pick(5, user); break;
-                    case '🟩': console.log('ble'); break;
-                    case '7️⃣': this.pick(6, user); break;
-                    case '8️⃣': this.pick(7, user); break;
-                    case '9️⃣': this.pick(8, user); break;
-                }
+	filter(reaction, user) {
+		return (
+			['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'].includes(
+				reaction.emoji.name,
+			) && user.id !== this.gameEmbed.author.id
+		);
+	}
 
-                reaction.users.remove(reaction.users.cache.filter(user => user.id !== this.gameEmbed.author.id).first().id).then(() => {
-                    if (this.checkBoard()) {
-                        this.gameOver();
-                    }
-                    else {
-                        this.step();
-                    }
-                });
-            })
-            .catch(collected => {
-                console.log('error');
-                this.gameOver();
-            });
-    }
+	waitForReaction() {
+		this.gameEmbed
+			.awaitReactions((reaction, user) => this.filter(reaction, user), {
+				max: 1,
+				errors: ['time'],
+			})
+			.then((collected) => {
+				const reaction = collected.first();
+				const user = reaction.users.cache
+					.filter((u) => u.id !== this.gameEmbed.author.id)
+					.first();
 
-    pick(num, user){
-        let player = false;
+				switch (reaction.emoji.name) {
+					case '1️⃣':
+						this.pick(0, user);
+						break;
+					case '2️⃣':
+						this.pick(1, user);
+						break;
+					case '3️⃣':
+						this.pick(2, user);
+						break;
+					case '🟥':
+						console.log('ble');
+						break;
+					case '4️⃣':
+						this.pick(3, user);
+						break;
+					case '5️⃣':
+						this.pick(4, user);
+						break;
+					case '6️⃣':
+						this.pick(5, user);
+						break;
+					case '🟩':
+						console.log('ble');
+						break;
+					case '7️⃣':
+						this.pick(6, user);
+						break;
+					case '8️⃣':
+						this.pick(7, user);
+						break;
+					case '9️⃣':
+						this.pick(8, user);
+						break;
+				}
 
-        for(let i = 0; i < this.players.length; i++){
-            //console.log(this.players[i].user.id + " " + this.players[i].sign)
-                 if(this.players[i].user.id == user.id && this.players[i].sign == this.turn){
-                     player = true; break;
-                 }
-        }
+				reaction.users
+					.remove(
+						reaction.users.cache
+							.filter((u) => u.id !== this.gameEmbed.author.id)
+							.first().id,
+					)
+					.then(() => {
+						if (this.checkBoard()) {
+							this.gameOver();
+						} else {
+							this.step();
+						}
+					});
+			})
+			.catch(() => {
+				console.log('error');
+				this.gameOver();
+			});
+	}
 
-        if(gameBoard[num] == DefSign && player == true){
-            gameBoard[num] = this.turn;
-            return isOk = true;
-        }
-        else return isOk = false;
-    }
+	pick(num, user) {
+		let player = false;
+
+		for (let i = 0; i < this.players.length; i++) {
+			// console.log(this.players[i].user.id + " " + this.players[i].sign)
+			if (
+				this.players[i].user.id == user.id &&
+				this.players[i].sign == this.turn
+			) {
+				player = true;
+				break;
+			}
+		}
+
+		if (gameBoard[num] == DefSign && player == true) {
+			gameBoard[num] = this.turn;
+			return (isOk = true);
+		} else {
+			return (isOk = false);
+		}
+	}
 }
 
 module.exports = XOGame;
