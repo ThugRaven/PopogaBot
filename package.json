@@ -1,0 +1,19 @@
+{
+	"name": "popoga-bot",
+	"version": "1.0.0",
+	"description": "Discord.js bot",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node .",
+		"lint": "eslint ."
+	},
+	"author": "Kamil Wesołowski",
+	"license": "ISC",
+	"dependencies": {
+		"discord.js": "^12.3.1"
+	},
+	"devDependencies": {
+		"eslint": "^8.7.0"
+	}
+}
