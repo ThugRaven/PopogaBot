@@ -10,10 +10,10 @@
 	},
 	"author": "Kamil Wesołowski",
 	"license": "ISC",
-	"dependencies": {
-		"discord.js": "^12.3.1"
-	},
 	"devDependencies": {
 		"eslint": "^8.7.0"
+	},
+	"dependencies": {
+		"discord.js": "^13.6.0"
 	}
 }
