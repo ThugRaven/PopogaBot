@@ -1,4 +1,8 @@
-const { SlashCommandBuilder, inlineCode } = require('@discordjs/builders');
+const {
+	SlashCommandBuilder,
+	inlineCode,
+	userMention,
+} = require('@discordjs/builders');
 const { Collection } = require('discord.js');
 const XOGame = require('../classes/xogame.js');
 
@@ -14,6 +18,7 @@ module.exports = {
 				.setDescription('Choose game action')
 				.addChoice('play', 'play')
 				.addChoice('start', 'start')
+				.addChoice('status', 'status')
 				.setRequired(true),
 		),
 	async execute(interaction) {
@@ -58,9 +63,11 @@ module.exports = {
 
 					game.addPlayer(player);
 					return await interaction.editReply(
-						`Player 1: ${game.players[0].user.username}\nPlayer 2: ${
-							game.players[1].user.username
-						}\nType ${inlineCode('/xo start')} to start the game!`,
+						`Player 1: ${userMention(
+							game.players[0].user.id,
+						)}\nPlayer 2: ${userMention(
+							game.players[1].user.id,
+						)}\nType ${inlineCode('/xo start')} to start the game!`,
 					);
 				}
 			} else {
@@ -78,16 +85,18 @@ module.exports = {
 						console.log(`Remove XOGame with id of: ${interaction.channelId}`);
 
 						interaction.followUp(
-							`Guess no one wants to play with ${game.players[0].user.username} :frowning:`,
+							`Guess no one wants to play with ${userMention(
+								game.players[0].user.id,
+							)} :frowning:`,
 						);
 						games.delete(interaction.channelId);
 					}
 				}, 30 * 1000);
 
 				return await interaction.editReply(
-					`Player 1: ${
-						xoGame.players[0].user.username
-					}, waiting for second user.\nType ${inlineCode('/xo play')} to play`,
+					`Player 1: ${userMention(
+						xoGame.players[0].user.id,
+					)}, waiting for second user.\nType ${inlineCode('/xo play')} to play`,
 				);
 			}
 		} else if (action === 'start') {
@@ -107,6 +116,38 @@ module.exports = {
 					);
 				}
 				await interaction.editReply('Error occured during game starting!');
+			}
+		} else if (action === 'status') {
+			console.log(game);
+
+			if (!game) {
+				return await interaction.editReply(
+					'No active game in current channel!',
+				);
+			} else {
+				let status = '';
+				status += `Game ID: ${game.id}\n`;
+				status += `Game status: ${
+					game.inGame ? 'Playing' : game.winner ? 'Game Over Lobby' : 'Lobby'
+				}\n`;
+				status += `Player 1: ${userMention(game.players[0].id)} - ${
+					game.players[0].sign
+				}\n`;
+				if (game.players[1]) {
+					status += `Player 1: ${userMention(game.players[1].id)} - ${
+						game.players[1].sign
+					}\n`;
+				}
+				status += `Round: ${game.round}\n`;
+				status += `Turn: ${game.turn}\n`;
+				if (game.winner) {
+					status += `Winner: ${
+						game.winner === 'Tie' ? 'Tie' : userMention(game.winner.id)
+					}\n`;
+				}
+				status += `Board: ${game.gameBoard}\n`;
+
+				return await interaction.editReply(status);
 			}
 		}
 	},

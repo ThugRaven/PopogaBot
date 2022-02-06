@@ -1,8 +1,8 @@
 const { MessageEmbed } = require('discord.js');
+const { userMention } = require('@discordjs/builders');
 
 const WIDTH = 3;
 const HEIGHT = 3;
-const gameBoard = [];
 
 const combinations = [
 	[0, 1, 2],
@@ -41,9 +41,10 @@ class XOGame {
 		this.winner = null;
 		this.moves = [];
 		this.message = null;
+		this.gameBoard = [];
 		for (let x = 0; x < WIDTH; x++) {
 			for (let y = 0; y < HEIGHT; y++) {
-				gameBoard[x * WIDTH + y] = DefSign;
+				this.gameBoard[x * WIDTH + y] = DefSign;
 			}
 		}
 	}
@@ -57,11 +58,11 @@ class XOGame {
 		for (let x = 0; x < WIDTH; x++) {
 			for (let y = 0; y < HEIGHT; y++) {
 				let sign;
-				if (gameBoard[x * WIDTH + y] == 'D') {
+				if (this.gameBoard[x * WIDTH + y] == 'D') {
 					sign = DSign;
-				} else if (gameBoard[x * WIDTH + y] == 'X') {
+				} else if (this.gameBoard[x * WIDTH + y] == 'X') {
 					sign = XSign;
-				} else if (gameBoard[x * WIDTH + y] == 'O') {
+				} else if (this.gameBoard[x * WIDTH + y] == 'O') {
 					sign = OSign;
 				}
 
@@ -81,6 +82,7 @@ class XOGame {
 		this.winner = null;
 		this.moves = [];
 		this.message = msg;
+		this.gameBoard = [];
 
 		this.players[0].sign = Player1;
 		this.players[1].sign = Player2;
@@ -88,7 +90,7 @@ class XOGame {
 
 		for (let x = 0; x < WIDTH; x++) {
 			for (let y = 0; y < HEIGHT; y++) {
-				gameBoard[x * WIDTH + y] = DefSign;
+				this.gameBoard[x * WIDTH + y] = DefSign;
 			}
 		}
 
@@ -174,7 +176,7 @@ class XOGame {
 		for (let x = 0; x < WIDTH; x++) {
 			this.moves[x] = [];
 			for (let y = 0; y < HEIGHT; y++) {
-				this.moves[x][y] = gameBoard[x * HEIGHT + y];
+				this.moves[x][y] = this.gameBoard[x * HEIGHT + y];
 				if (this.moves[x][y] == DefSign) isDone = false;
 			}
 		}
@@ -214,9 +216,9 @@ class XOGame {
 		if (this.winner != null) {
 			console.log('Winner: ' + this.winner);
 			if (this.players[0].sign == this.winner) {
-				this.winner = this.players[0].user.username;
+				this.winner = this.players[0].user;
 			} else {
-				this.winner = this.players[1].user.username;
+				this.winner = this.players[1].user;
 			}
 			return true;
 		} else if (isDone) {
@@ -233,7 +235,9 @@ class XOGame {
 			.setColor('#0099ff')
 			.setTitle('Tic Tac Toe')
 			.setDescription(
-				'GAME OVER!\nWinner: ' + this.winner + '\n\nPress 🔁 to restart',
+				`GAME OVER!\nWinner: ${
+					this.winner === 'Tie' ? 'Tie' : userMention(this.winner.id)
+				} \n\nPress 🔁 to restart`,
 			)
 			.setTimestamp();
 		this.gameEmbed.edit({ embeds: [editEmbed] });
@@ -361,8 +365,8 @@ class XOGame {
 			}
 		}
 
-		if (gameBoard[num] == DefSign && player == true) {
-			gameBoard[num] = this.turn;
+		if (this.gameBoard[num] == DefSign && player == true) {
+			this.gameBoard[num] = this.turn;
 			return (isOk = true);
 		} else {
 			return (isOk = false);
