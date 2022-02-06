@@ -2,6 +2,7 @@ const {
 	SlashCommandBuilder,
 	inlineCode,
 	userMention,
+	channelMention,
 } = require('@discordjs/builders');
 const { XOGames } = require('../classes/games.js');
 const XOGame = require('../classes/xogame.js');
@@ -10,26 +11,36 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('xo')
 		.setDescription('Play a game of Tic-tac-toe.')
-		.addStringOption((option) =>
-			option
-				.setName('action')
-				.setDescription('Choose game action')
-				.addChoice('play', 'play')
-				.addChoice('start', 'start')
-				.addChoice('status', 'status')
-				.setRequired(true),
+		.addSubcommand((subcommand) =>
+			subcommand.setName('play').setDescription('Play a game of Tic Tac Toe'),
+		)
+		.addSubcommand((subcommand) =>
+			subcommand.setName('start').setDescription('Start the game'),
+		)
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName('info')
+				.setDescription('Check game info')
+				.addChannelOption((option) =>
+					option
+						.setName('channel')
+						.setDescription('Check game info of given channel'),
+				),
 		),
 	async execute(interaction) {
-		const action = interaction.options.getString('action');
+		const subcommand = interaction.options.getSubcommand();
 
 		let msg = null;
-		if (action !== 'status') {
+		console.log(subcommand);
+		if (subcommand !== 'info') {
+			console.log('INFO');
 			msg = await interaction.deferReply({ fetchReply: true });
 		}
+		console.log(msg);
 
 		let game = XOGames.get(interaction.channelId);
 
-		if (action === 'play') {
+		if (subcommand === 'play') {
 			console.log('Play');
 
 			const player = {
@@ -100,7 +111,7 @@ module.exports = {
 					)}, waiting for second user.\nType ${inlineCode('/xo play')} to play`,
 				);
 			}
-		} else if (action === 'start') {
+		} else if (subcommand === 'start') {
 			if (!game) {
 				return await interaction.editReply('No game to start!');
 			} else {
@@ -118,40 +129,45 @@ module.exports = {
 				}
 				await interaction.editReply('Error occured during game starting!');
 			}
-		} else if (action === 'status') {
+		} else if (subcommand === 'info') {
+			const channel = interaction.options.getChannel('channel');
+			if (channel) {
+				game = XOGames.get(channel);
+			}
 			console.log(game);
-			console.log(XOGames);
 
 			if (!game) {
 				return await interaction.reply({
-					content: 'No active game in current channel!',
+					content: `No active game in ${
+						channel ? channelMention(channel) : 'current channel!'
+					}`,
 					ephemeral: true,
 				});
 			} else {
-				let status = '';
-				status += `Game ID: ${game.id}\n`;
-				status += `Game status: ${
+				let info = '';
+				info += `Game ID: ${game.id}\n`;
+				info += `Game status: ${
 					game.inGame ? 'Playing' : game.winner ? 'Game Over Lobby' : 'Lobby'
 				}\n`;
-				status += `Player 1: ${userMention(game.players[0].id)} - ${
+				info += `Player 1: ${userMention(game.players[0].id)} - ${
 					game.players[0].sign
 				}\n`;
 				if (game.players[1]) {
-					status += `Player 1: ${userMention(game.players[1].id)} - ${
+					info += `Player 1: ${userMention(game.players[1].id)} - ${
 						game.players[1].sign
 					}\n`;
 				}
-				status += `Round: ${game.round}\n`;
-				status += `Turn: ${game.turn}\n`;
+				info += `Round: ${game.round}\n`;
+				info += `Turn: ${game.turn}\n`;
 				if (game.winner) {
-					status += `Winner: ${
+					info += `Winner: ${
 						game.winner === 'Tie' ? 'Tie' : userMention(game.winner.id)
 					}\n`;
 				}
-				status += `Board: ${game.gameBoard}\n`;
+				info += `Board: ${game.gameBoard}\n`;
 
 				return await interaction.reply({
-					content: status,
+					content: info,
 					ephemeral: true,
 				});
 			}
