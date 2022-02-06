@@ -1,4 +1,4 @@
-const Discord = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const WIDTH = 3;
 const HEIGHT = 3;
@@ -31,7 +31,8 @@ const XSign = ':regional_indicator_x:';
 const OSign = ':regional_indicator_o:';
 
 class XOGame {
-	constructor() {
+	constructor(id) {
+		this.id = id;
 		this.players = new Array();
 		this.round = 0;
 		this.turn = this.round % 2 === 0 ? Player2 : Player1;
@@ -45,6 +46,10 @@ class XOGame {
 				gameBoard[x * WIDTH + y] = DefSign;
 			}
 		}
+	}
+
+	addPlayer(player) {
+		this.players.push(player);
 	}
 
 	gameBoardToString() {
@@ -67,7 +72,7 @@ class XOGame {
 		return str;
 	}
 
-	newGame(msg, players) {
+	newGame(msg) {
 		if (this.inGame) return;
 
 		console.log('New game');
@@ -77,7 +82,9 @@ class XOGame {
 		this.moves = [];
 		this.message = msg;
 
-		this.players = players;
+		this.players[0].sign = Player1;
+		this.players[1].sign = Player2;
+		console.log(this.players);
 
 		for (let x = 0; x < WIDTH; x++) {
 			for (let y = 0; y < HEIGHT; y++) {
@@ -85,14 +92,14 @@ class XOGame {
 			}
 		}
 
-		const embed = new Discord.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle('Tic Tac Toe')
 			.setDescription(
 				`Wait for reactions to come up...\n\n${this.gameBoardToString()}`,
 			);
 
-		msg.channel.send(embed).then((emsg) => {
+		msg.channel.send({ embeds: [embed] }).then((emsg) => {
 			this.gameEmbed = emsg;
 			this.gameEmbed.react('1️⃣');
 			this.gameEmbed.react('2️⃣');
@@ -106,7 +113,7 @@ class XOGame {
 			this.gameEmbed.react('8️⃣');
 			this.gameEmbed.react('9️⃣').then(() => {
 				const sign = this.turn == Player1 ? XSign : OSign;
-				const editEmbed = new Discord.MessageEmbed()
+				const editEmbed = new MessageEmbed()
 					.setColor('#0099ff')
 					.setTitle('Tic Tac Toe')
 					// .setAuthor(`${this.turn}`)
@@ -119,7 +126,7 @@ class XOGame {
 								: this.players[1].user.username
 						}\n\n${this.gameBoardToString()}`,
 					);
-				this.gameEmbed.edit(editEmbed);
+				this.gameEmbed.edit({ embeds: [editEmbed] });
 			});
 
 			this.waitForReaction();
@@ -132,7 +139,7 @@ class XOGame {
 			this.turn = this.round % 2 === 0 ? Player2 : Player1;
 
 			const sign = this.turn == Player1 ? XSign : OSign;
-			const editEmbed = new Discord.MessageEmbed()
+			const editEmbed = new MessageEmbed()
 				.setColor('#0099ff')
 				.setTitle('Tic Tac Toe')
 				// .setAuthor(`${this.turn}`)
@@ -143,7 +150,7 @@ class XOGame {
 							: this.players[1].user.username
 					}\n\n${this.gameBoardToString()}`,
 				);
-			this.gameEmbed.edit(editEmbed);
+			this.gameEmbed.edit({ embeds: [editEmbed] });
 		}
 		this.waitForReaction();
 	}
@@ -222,50 +229,59 @@ class XOGame {
 
 	gameOver() {
 		this.inGame = false;
-		const editEmbed = new Discord.MessageEmbed()
+		const editEmbed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle('Tic Tac Toe')
 			.setDescription(
 				'GAME OVER!\nWinner: ' + this.winner + '\n\nPress 🔁 to restart',
 			)
 			.setTimestamp();
-		this.gameEmbed.edit(editEmbed);
+		this.gameEmbed.edit({ embeds: [editEmbed] });
 
 		const filter = (reaction, user) => {
 			return (
-				['🔁'].includes(reaction.emoji.name) &&
+				['🔁', '❌'].includes(reaction.emoji.name) &&
 				user.id !== this.gameEmbed.author.id
 			);
 		};
 
 		this.gameEmbed.react('🔁');
+		this.gameEmbed.react('❌');
 		this.gameEmbed
-			.awaitReactions(filter, { max: 1, time: 60000, errors: ['time'] })
+			.awaitReactions({ filter, max: 1, time: 60 * 1000, errors: ['time'] })
 			.then((collected) => {
 				const reaction = collected.first();
 
 				if (reaction.emoji.name == '🔁') {
 					console.log('Restart');
-					this.newGame(this.message, this.players);
+					// Remove message for performance
+					this.gameEmbed.delete({ timeout: 2 * 1000 });
+					this.newGame(this.message);
+				} else if (reaction.emoji.name == '❌') {
+					console.log('Remove');
+					this.gameEmbed.delete({ timeout: 1 * 1000 });
 				}
 			})
-			.catch(() => {
-				console.log('error');
+			.catch((collected) => {
+				console.error(collected);
+				this.gameEmbed.delete({ timeout: 2 * 1000 });
+				console.log('error/removed due to timeout');
 			});
 		// this.gameEmbed.reactions.removeAll()
 	}
 
-	filter(reaction, user) {
-		return (
-			['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'].includes(
-				reaction.emoji.name,
-			) && user.id !== this.gameEmbed.author.id
-		);
-	}
-
 	waitForReaction() {
+		const filter = (reaction, user) => {
+			return (
+				['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'].includes(
+					reaction.emoji.name,
+				) && user.id !== this.gameEmbed.author.id
+			);
+		};
+
 		this.gameEmbed
-			.awaitReactions((reaction, user) => this.filter(reaction, user), {
+			.awaitReactions({
+				filter,
 				max: 1,
 				errors: ['time'],
 			})
