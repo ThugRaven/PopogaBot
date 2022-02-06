@@ -131,20 +131,26 @@ module.exports = {
 			}
 		} else if (subcommand === 'info') {
 			const channel = interaction.options.getChannel('channel');
+			console.log(channel);
 			if (channel) {
-				game = XOGames.get(channel);
+				game = XOGames.get(channel.id);
 			}
 			console.log(game);
 
 			if (!game) {
 				return await interaction.reply({
 					content: `No active game in ${
-						channel ? channelMention(channel) : 'current channel!'
+						channel ? channelMention(channel.id) : 'current channel!'
 					}`,
 					ephemeral: true,
 				});
 			} else {
 				let info = '';
+				info += `Channel: ${
+					channel
+						? channelMention(channel.id)
+						: channelMention(interaction.channelId)
+				}\n`;
 				info += `Game ID: ${game.id}\n`;
 				info += `Game status: ${
 					game.inGame ? 'Playing' : game.winner ? 'Game Over Lobby' : 'Lobby'
