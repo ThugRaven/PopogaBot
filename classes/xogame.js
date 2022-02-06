@@ -1,5 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const { userMention } = require('@discordjs/builders');
+const { XOGames } = require('./games');
 
 const WIDTH = 3;
 const HEIGHT = 3;
@@ -262,8 +263,10 @@ class XOGame {
 					this.gameEmbed.delete({ timeout: 2 * 1000 });
 					this.newGame(this.message);
 				} else if (reaction.emoji.name == '❌') {
-					console.log('Remove');
+					console.log(`Remove XOGame with id of: ${this.id}`);
 					this.gameEmbed.delete({ timeout: 1 * 1000 });
+					XOGames.delete(this.id);
+					console.log(XOGames);
 				}
 			})
 			.catch((collected) => {

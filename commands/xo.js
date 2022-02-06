@@ -3,10 +3,8 @@ const {
 	inlineCode,
 	userMention,
 } = require('@discordjs/builders');
-const { Collection } = require('discord.js');
+const { XOGames } = require('../classes/games.js');
 const XOGame = require('../classes/xogame.js');
-
-const games = new Collection();
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -22,11 +20,14 @@ module.exports = {
 				.setRequired(true),
 		),
 	async execute(interaction) {
-		const msg = await interaction.deferReply({ fetchReply: true });
-
 		const action = interaction.options.getString('action');
 
-		let game = games.get(interaction.channelId);
+		let msg = null;
+		if (action !== 'status') {
+			msg = await interaction.deferReply({ fetchReply: true });
+		}
+
+		let game = XOGames.get(interaction.channelId);
 
 		if (action === 'play') {
 			console.log('Play');
@@ -56,7 +57,7 @@ module.exports = {
 					}
 
 					if (game.players[0].user.id === interaction.user.id) {
-						return await interaction.editReply("You can't play with yourself!");
+						// return await interaction.editReply("You can't play with yourself!");
 					}
 
 					console.log(`Add player to lobby: ${player.user.username}`);
@@ -78,9 +79,9 @@ module.exports = {
 
 				const xoGame = new XOGame(interaction.channelId);
 				xoGame.addPlayer(player);
-				games.set(interaction.channelId, xoGame);
+				XOGames.set(interaction.channelId, xoGame);
 				setTimeout(() => {
-					game = games.get(interaction.channelId);
+					game = XOGames.get(interaction.channelId);
 					if (game.players.length == 1) {
 						console.log(`Remove XOGame with id of: ${interaction.channelId}`);
 
@@ -89,7 +90,7 @@ module.exports = {
 								game.players[0].user.id,
 							)} :frowning:`,
 						);
-						games.delete(interaction.channelId);
+						XOGames.delete(interaction.channelId);
 					}
 				}, 30 * 1000);
 
@@ -119,11 +120,13 @@ module.exports = {
 			}
 		} else if (action === 'status') {
 			console.log(game);
+			console.log(XOGames);
 
 			if (!game) {
-				return await interaction.editReply(
-					'No active game in current channel!',
-				);
+				return await interaction.reply({
+					content: 'No active game in current channel!',
+					ephemeral: true,
+				});
 			} else {
 				let status = '';
 				status += `Game ID: ${game.id}\n`;
@@ -147,7 +150,10 @@ module.exports = {
 				}
 				status += `Board: ${game.gameBoard}\n`;
 
-				return await interaction.editReply(status);
+				return await interaction.reply({
+					content: status,
+					ephemeral: true,
+				});
 			}
 		}
 	},
