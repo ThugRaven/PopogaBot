@@ -272,6 +272,7 @@ class XOGame {
 			.catch((collected) => {
 				console.error(collected);
 				this.gameEmbed.delete({ timeout: 2 * 1000 });
+				XOGames.delete(this.id);
 				console.log('error/removed due to timeout');
 			});
 		// this.gameEmbed.reactions.removeAll()
