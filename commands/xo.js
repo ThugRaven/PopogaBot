@@ -31,18 +31,13 @@ module.exports = {
 		const subcommand = interaction.options.getSubcommand();
 
 		let msg = null;
-		console.log(subcommand);
 		if (subcommand !== 'info') {
-			console.log('INFO');
 			msg = await interaction.deferReply({ fetchReply: true });
 		}
-		console.log(msg);
 
 		let game = XOGames.get(interaction.channelId);
 
 		if (subcommand === 'play') {
-			console.log('Play');
-
 			const player = {
 				user: interaction.user,
 				id: interaction.user.id,
@@ -85,7 +80,7 @@ module.exports = {
 			} else {
 				// Create lobby
 				console.log(
-					`Create lobby id: ${interaction.channelId},\nwith player: ${player.user.username}`,
+					`Create XO lobby id: ${interaction.channelId},\nwith player: ${player.user.username}`,
 				);
 
 				const xoGame = new XOGame(interaction.channelId);
@@ -94,7 +89,7 @@ module.exports = {
 				setTimeout(() => {
 					game = XOGames.get(interaction.channelId);
 					if (game.players.length == 1) {
-						console.log(`Remove XOGame with id of: ${interaction.channelId}`);
+						console.log(`Remove XO with id of: ${interaction.channelId}`);
 
 						interaction.followUp(
 							`Guess no one wants to play with ${userMention(
