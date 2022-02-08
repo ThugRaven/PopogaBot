@@ -1,4 +1,5 @@
 const { MessageEmbed } = require('discord.js');
+const { userMention } = require('@discordjs/builders');
 const { MODE_EACH } = require('../constants.js');
 const { RouletteGames } = require('./games.js');
 
@@ -46,13 +47,14 @@ class RouletteGame {
 		msg.channel.send({ embeds: [embed] }).then((emsg) => {
 			this.gameEmbed = emsg;
 			this.gameEmbed.react('🔫').then(() => {
-				const player =
-					this.players[this.round % this.players.length].user.username;
-				console.log(`${player} - ${this.round}`);
+				const player = this.players[this.round % this.players.length].user;
+				console.log(`${player.username} - ${this.round}`);
 				const editEmbed = new MessageEmbed()
 					.setColor('#0099ff')
 					.setTitle('Russian Roulette')
-					.setDescription(`${player} it's your time to shoot 🙂🔫`)
+					.setDescription(
+						`${userMention(player.id)} it's your time to shoot 🙂🔫`,
+					)
 					.setImage('https://media.giphy.com/media/mwFRWrcN1z42s/giphy.gif');
 				this.gameEmbed.edit({ embeds: [editEmbed] });
 			});
@@ -73,9 +75,8 @@ class RouletteGame {
 
 			this.round++;
 			this.pos++;
-			const player =
-				this.players[this.round % this.players.length].user.username;
-			console.log(`${player} - ${this.round}`);
+			const player = this.players[this.round % this.players.length].user;
+			console.log(`${player.username} - ${this.round}`);
 
 			let editEmbed = new MessageEmbed()
 				.setColor('#0099ff')
@@ -88,7 +89,9 @@ class RouletteGame {
 				editEmbed = new MessageEmbed()
 					.setColor('#28a745')
 					.setTitle('Russian Roulette')
-					.setDescription(`${player} it's your time to shoot 🙂🔫`)
+					.setDescription(
+						`${userMention(player.id)} it's your time to shoot 🙂🔫`,
+					)
 					.setImage('https://media.giphy.com/media/mwFRWrcN1z42s/giphy.gif');
 				this.gameEmbed.edit({ embeds: [editEmbed] });
 
@@ -129,10 +132,10 @@ class RouletteGame {
 			this.inGame = false;
 			const description =
 				this.pos >= 6
-					? `Finally after ${this.pos + 1} pulls ${
-							this.winner.user.username
-					  } shoot himself in the head 🙂`
-					: `${this.winner.user.username} shoot himself in the head`;
+					? `Finally after ${this.pos + 1} pulls ${userMention(
+							this.winner.user.id,
+					  )} shoot himself in the head 🙂`
+					: `${userMention(this.winner.user.id)} shoot himself in the head`;
 			editEmbed = new MessageEmbed()
 				.setColor('#dc3545')
 				.setTitle('Russian Roulette')
@@ -150,10 +153,16 @@ class RouletteGame {
 					this.winner.user.id,
 				);
 				console.log(userToTimeout);
-				await userToTimeout.timeout(
-					(this.pos + 1) * 10 * 1000,
-					'Reconsider your life choices',
-				);
+				try {
+					await userToTimeout.timeout(
+						(this.pos + 1) * 10 * 1000,
+						'Reconsider your life choices',
+					);
+				} catch (error) {
+					await this.message.channel.send(
+						`Can't timeout ${userMention(this.winner.user.id)}!`,
+					);
+				}
 			}
 
 			const filter = (reaction, user) => {
