@@ -1,9 +1,11 @@
-const Discord = require('discord.js');
-const { TYPE_EACH } = require('./constants.js');
+const { MessageEmbed } = require('discord.js');
+const { MODE_EACH } = require('../constants.js');
+const { RouletteGames } = require('./games.js');
 
 let isOk = false;
 class RouletteGame {
-	constructor() {
+	constructor(id) {
+		this.id = id;
 		this.players = new Array();
 		this.round = 0;
 		this.gameEmbed = null;
@@ -14,43 +16,45 @@ class RouletteGame {
 		this.pos = 0;
 		this.type = -1;
 		this.timeoutable = false;
-		this.guild = null;
 	}
 
-	newGame(msg, players, type, timeoutable) {
+	addPlayer(player) {
+		this.players.push(player);
+	}
+
+	newGame(msg, type, timeoutable) {
 		if (this.inGame) return;
 
 		console.log('New game');
 		this.inGame = true;
-		this.round = players.length;
+		this.round = this.players.length;
 		this.winner = null;
 		this.message = msg;
 		this.pos = 0;
 		this.type = type;
 		this.timeoutable = timeoutable;
-		this.guild = msg.guild;
 
-		this.players = players;
 		this.bullet = new Array(6).fill(false);
 		this.bullet[Math.floor(Math.random() * 6)] = true;
 		// console.log(this.bullet);
 
-		const embed = new Discord.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle('Russian Roulette')
 			.setDescription('Wait for reactions to come up...');
 
-		msg.channel.send(embed).then((emsg) => {
+		msg.channel.send({ embeds: [embed] }).then((emsg) => {
 			this.gameEmbed = emsg;
 			this.gameEmbed.react('🔫').then(() => {
-				const player = players[this.round % players.length].user.username;
+				const player =
+					this.players[this.round % this.players.length].user.username;
 				console.log(`${player} - ${this.round}`);
-				const editEmbed = new Discord.MessageEmbed()
+				const editEmbed = new MessageEmbed()
 					.setColor('#0099ff')
 					.setTitle('Russian Roulette')
 					.setDescription(`${player} it's your time to shoot 🙂🔫`)
 					.setImage('https://media.giphy.com/media/mwFRWrcN1z42s/giphy.gif');
-				this.gameEmbed.edit(editEmbed);
+				this.gameEmbed.edit({ embeds: [editEmbed] });
 			});
 
 			this.waitForReaction();
@@ -61,7 +65,7 @@ class RouletteGame {
 		if (isOk) {
 			console.log('Step');
 
-			if (this.type === TYPE_EACH) {
+			if (this.type === MODE_EACH) {
 				this.bullet = new Array(6).fill(false);
 				this.bullet[Math.floor(Math.random() * 6)] = true;
 			}
@@ -73,20 +77,20 @@ class RouletteGame {
 				this.players[this.round % this.players.length].user.username;
 			console.log(`${player} - ${this.round}`);
 
-			let editEmbed = new Discord.MessageEmbed()
+			let editEmbed = new MessageEmbed()
 				.setColor('#0099ff')
 				.setTitle('Russian Roulette')
 				.setDescription('🙂🔫')
 				.setImage('https://media.giphy.com/media/3o6Mb2Cq10b0OQRqYU/giphy.gif');
-			this.gameEmbed.edit(editEmbed);
+			this.gameEmbed.edit({ embeds: [editEmbed] });
 
 			setTimeout(() => {
-				editEmbed = new Discord.MessageEmbed()
+				editEmbed = new MessageEmbed()
 					.setColor('#28a745')
 					.setTitle('Russian Roulette')
 					.setDescription(`${player} it's your time to shoot 🙂🔫`)
 					.setImage('https://media.giphy.com/media/mwFRWrcN1z42s/giphy.gif');
-				this.gameEmbed.edit(editEmbed);
+				this.gameEmbed.edit({ embeds: [editEmbed] });
 
 				this.waitForReaction();
 			}, 3000);
@@ -98,7 +102,7 @@ class RouletteGame {
 	check() {
 		const player = this.players[this.round % this.players.length];
 
-		if (this.type === TYPE_EACH) {
+		if (this.type === MODE_EACH) {
 			if (this.bullet[this.pos % 6] == true) {
 				this.winner = player;
 				return true;
@@ -114,14 +118,14 @@ class RouletteGame {
 	}
 
 	gameOver() {
-		let editEmbed = new Discord.MessageEmbed()
+		let editEmbed = new MessageEmbed()
 			.setColor('#0099ff')
 			.setTitle('Russian Roulette')
 			.setDescription('🙂🔫')
 			.setImage('https://media.giphy.com/media/3o6Mb2Cq10b0OQRqYU/giphy.gif');
-		this.gameEmbed.edit(editEmbed);
+		this.gameEmbed.edit({ embeds: [editEmbed] });
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			this.inGame = false;
 			const description =
 				this.pos >= 6
@@ -129,22 +133,28 @@ class RouletteGame {
 							this.winner.user.username
 					  } shoot himself in the head 🙂`
 					: `${this.winner.user.username} shoot himself in the head`;
-			editEmbed = new Discord.MessageEmbed()
+			editEmbed = new MessageEmbed()
 				.setColor('#dc3545')
 				.setTitle('Russian Roulette')
 				.setDescription(`😵💥🔫\n\n${description}\n\nPress 🔁 to restart`)
 				.setImage('https://media.giphy.com/media/l46C7ZAkAoQ2A9wUU/giphy.gif')
 				.setTimestamp();
-			this.gameEmbed.edit(editEmbed);
+			this.gameEmbed.edit({ embeds: [editEmbed] });
 
-			// console.log(this.winner);
-			// console.log(this.timeoutable);
-			// if (this.timeoutable) {
-			// 	console.log('timeout');
-			// 	const userToTimeout = this.guild.members.cache.get(this.winner.user.id);
-			// 	console.log(userToTimeout);
-			// 	userToTimeout.timeout(1 * 1000, 'Reconsider your life choices');
-			// }
+			console.log(this.winner);
+			console.log(this.timeoutable);
+			if (this.timeoutable) {
+				console.log('timeout');
+				console.log(this.message);
+				const userToTimeout = await this.message.guild.members.fetch(
+					this.winner.user.id,
+				);
+				console.log(userToTimeout);
+				await userToTimeout.timeout(
+					(this.pos + 1) * 10 * 1000,
+					'Reconsider your life choices',
+				);
+			}
 
 			const filter = (reaction, user) => {
 				return (
@@ -156,7 +166,7 @@ class RouletteGame {
 			this.gameEmbed.react('🔁');
 			this.gameEmbed.react('❌');
 			this.gameEmbed
-				.awaitReactions(filter, { max: 1, time: 60 * 1000, errors: ['time'] })
+				.awaitReactions({ filter, max: 1, time: 60 * 1000, errors: ['time'] })
 				.then((collected) => {
 					const reaction = collected.first();
 
@@ -164,16 +174,20 @@ class RouletteGame {
 						console.log('Restart');
 						// Remove message for performance
 						this.gameEmbed.delete({ timeout: 2 * 1000 });
-						this.newGame(this.message, this.players, this.type);
+						this.newGame(this.message, this.type, this.timeoutable);
 					} else if (reaction.emoji.name == '❌') {
 						console.log('Remove');
 						this.gameEmbed.delete({ timeout: 1 * 1000 });
+						RouletteGames.delete(this.id);
+						console.log(`Remove RRGame with id of: ${this.id}`);
 					}
 				})
 				.catch((collected) => {
 					console.error(collected);
 					this.gameEmbed.delete({ timeout: 2 * 1000 });
 					console.log('error/removed due to timeout');
+					RouletteGames.delete(this.id);
+					console.log(`Remove RRGame with id of: ${this.id}`);
 				});
 		}, 3000);
 	}
@@ -187,7 +201,7 @@ class RouletteGame {
 		};
 
 		this.gameEmbed
-			.awaitReactions(filter, { max: 1, errors: ['time'] })
+			.awaitReactions({ filter, max: 1, errors: ['time'] })
 			.then((collected) => {
 				const reaction = collected.first();
 				const user = reaction.users.cache
@@ -196,7 +210,7 @@ class RouletteGame {
 
 				if (reaction.emoji.name == '🔫') {
 					console.log(`Shoot ${this.pos}`);
-					if (this.type === TYPE_EACH) {
+					if (this.type === MODE_EACH) {
 						console.log(`Shoot % ${this.pos % 6}`);
 					}
 					this.pick(user);
