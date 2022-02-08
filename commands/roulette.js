@@ -71,7 +71,7 @@ module.exports = {
 				} else {
 					// Add player to lobby
 					console.log(player);
-					if (player.id === game.players.find(() => player.id)) {
+					if (game.players.find(({ id }) => id === player.id)) {
 						return await interaction.editReply(`You can't join twice!`);
 					}
 
@@ -93,7 +93,7 @@ module.exports = {
 				RouletteGames.set(interaction.channelId, rouletteGame);
 				setTimeout(() => {
 					game = RouletteGames.get(interaction.channelId);
-					if (!game.inGame) {
+					if (!game.inGame && !game.winner) {
 						console.log(`Remove RR with id of: ${interaction.channelId}`);
 
 						interaction.followUp(`Lobby was closed due to timeout`);
@@ -162,22 +162,15 @@ module.exports = {
 				info += `Game status: ${
 					game.inGame ? 'Playing' : game.winner ? 'Game Over Lobby' : 'Lobby'
 				}\n`;
-				info += `Player 1: ${userMention(game.players[0].id)} - ${
-					game.players[0].sign
-				}\n`;
-				if (game.players[1]) {
-					info += `Player 1: ${userMention(game.players[1].id)} - ${
-						game.players[1].sign
-					}\n`;
-				}
 				info += `Round: ${game.round}\n`;
-				info += `Turn: ${game.turn}\n`;
-				if (game.winner) {
-					info += `Winner: ${
-						game.winner === 'Tie' ? 'Tie' : userMention(game.winner.id)
-					}\n`;
+				info += `Pull: ${game.pos}\n`;
+				if (game.inGame) {
+					info += `Chamber: ${game.bullet}\n`;
 				}
-				info += `Board: ${game.gameBoard}\n`;
+				if (game.winner) {
+					info += `Loser: ${userMention(game.winner.id)}\n`;
+				}
+				info += `Players: ${game.players}\n`;
 
 				return await interaction.reply({
 					content: info,
