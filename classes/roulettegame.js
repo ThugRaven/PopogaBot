@@ -136,7 +136,6 @@ class RouletteGame {
 			console.log(this.timeoutable);
 			if (this.timeoutable) {
 				console.log('timeout');
-				console.log(this.message);
 				const userToTimeout = await this.message.guild.members.fetch(
 					this.winner.user.id,
 				);
@@ -144,7 +143,11 @@ class RouletteGame {
 				try {
 					const time = (this.pos + 1) * 10 * 1000;
 					await userToTimeout.timeout(time, 'Reconsider your life choices');
-					timeoutText = `Enjoy your ${time}s timeout!`;
+					timeoutText = `Enjoy your ${time / 1000}s timeout!`;
+					const index = this.players.findIndex(
+						({ id }) => id === this.winner.user.id,
+					);
+					this.players.splice(index, 1);
 				} catch (error) {
 					timeoutText = "Can't timeout this user!";
 				}
@@ -184,7 +187,17 @@ class RouletteGame {
 						console.log('Restart');
 						// Remove message for performance
 						this.gameEmbed.delete({ timeout: 2 * 1000 });
-						this.newGame(this.message, this.type, this.timeoutable);
+						if (this.players.length > 0) {
+							this.newGame(this.message, this.type, this.timeoutable);
+						} else {
+							this.message.channel.send(
+								'Sadly, there are no more players to play 🙂',
+							);
+							RouletteGames.delete(this.id);
+							console.log(
+								`Remove RRGame (no more players) with id of: ${this.id}`,
+							);
+						}
 					} else if (reaction.emoji.name == '❌') {
 						console.log('Remove');
 						this.gameEmbed.delete({ timeout: 1 * 1000 });
