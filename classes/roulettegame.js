@@ -130,19 +130,7 @@ class RouletteGame {
 
 		setTimeout(async () => {
 			this.inGame = false;
-			const description =
-				this.pos >= 6
-					? `Finally after ${this.pos + 1} pulls ${userMention(
-							this.winner.user.id,
-					  )} shoot himself in the head 🙂`
-					: `${userMention(this.winner.user.id)} shoot himself in the head`;
-			editEmbed = new MessageEmbed()
-				.setColor('#dc3545')
-				.setTitle('Russian Roulette')
-				.setDescription(`😵💥🔫\n\n${description}\n\nPress 🔁 to restart`)
-				.setImage('https://media.giphy.com/media/l46C7ZAkAoQ2A9wUU/giphy.gif')
-				.setTimestamp();
-			this.gameEmbed.edit({ embeds: [editEmbed] });
+			let timeoutText = '';
 
 			console.log(this.winner);
 			console.log(this.timeoutable);
@@ -154,16 +142,29 @@ class RouletteGame {
 				);
 				console.log(userToTimeout);
 				try {
-					await userToTimeout.timeout(
-						(this.pos + 1) * 10 * 1000,
-						'Reconsider your life choices',
-					);
+					const time = (this.pos + 1) * 10 * 1000;
+					await userToTimeout.timeout(time, 'Reconsider your life choices');
+					timeoutText = `Enjoy your ${time}s timeout!`;
 				} catch (error) {
-					await this.message.channel.send(
-						`Can't timeout ${userMention(this.winner.user.id)}!`,
-					);
+					timeoutText = "Can't timeout this user!";
 				}
 			}
+
+			const description =
+				this.pos >= 6
+					? `Finally after ${this.pos + 1} pulls ${userMention(
+							this.winner.user.id,
+					  )} shoot himself in the head 🙂`
+					: `${userMention(this.winner.user.id)} shoot himself in the head`;
+			editEmbed = new MessageEmbed()
+				.setColor('#dc3545')
+				.setTitle('Russian Roulette')
+				.setDescription(
+					`😵💥🔫\n\n${description}\n${timeoutText}\n\nPress 🔁 to restart`,
+				)
+				.setImage('https://media.giphy.com/media/l46C7ZAkAoQ2A9wUU/giphy.gif')
+				.setTimestamp();
+			this.gameEmbed.edit({ embeds: [editEmbed] });
 
 			const filter = (reaction, user) => {
 				return (
