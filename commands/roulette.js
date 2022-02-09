@@ -163,14 +163,18 @@ module.exports = {
 					game.inGame ? 'Playing' : game.winner ? 'Game Over Lobby' : 'Lobby'
 				}\n`;
 				info += `Round: ${game.round}\n`;
-				info += `Pull: ${game.pos}\n`;
+				info += `Shots: ${game.pos + 1}\n`;
 				if (game.inGame) {
 					info += `Chamber: ${game.bullet}\n`;
 				}
 				if (game.winner) {
 					info += `Loser: ${userMention(game.winner.id)}\n`;
 				}
-				info += `Players: ${game.players}\n`;
+				let playersList = '';
+				game.players.forEach((player) => {
+					playersList = playersList.concat(`${player.user.username}\n`);
+				});
+				info += `Players: ${playersList}\n`;
 
 				return await interaction.reply({
 					content: info,
