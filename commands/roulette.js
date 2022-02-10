@@ -70,6 +70,13 @@ module.exports = {
 					);
 				} else {
 					// Add player to lobby
+					if (game.timeout) {
+						clearTimeout(game.timeout);
+						game.timeout = setTimeout(() => {
+							removeGame(game, interaction);
+						}, 30 * 1000);
+						console.log('Refresh lobby timeout');
+					}
 					console.log(player);
 					if (game.players.find(({ id }) => id === player.id)) {
 						return await interaction.editReply(`You can't join twice!`);
@@ -78,6 +85,7 @@ module.exports = {
 					console.log(`Add player to lobby: ${player.user.username}`);
 
 					game.addPlayer(player);
+
 					return await interaction.editReply(
 						`User ${userMention(player.id)} joined to the Russian Roulette!`,
 					);
@@ -88,18 +96,12 @@ module.exports = {
 					`Create RR lobby id: ${interaction.channelId},\nwith player: ${player.user.username}`,
 				);
 
-				const rouletteGame = new RouletteGame(interaction.channelId);
+				const timeout = setTimeout(() => {
+					removeGame(game, interaction);
+				}, 60 * 1000);
+				const rouletteGame = new RouletteGame(interaction.channelId, timeout);
 				rouletteGame.addPlayer(player);
 				RouletteGames.set(interaction.channelId, rouletteGame);
-				setTimeout(() => {
-					game = RouletteGames.get(interaction.channelId);
-					if (!game.inGame && !game.winner) {
-						console.log(`Remove RR with id of: ${interaction.channelId}`);
-
-						interaction.followUp(`Lobby was closed due to timeout`);
-						RouletteGames.delete(interaction.channelId);
-					}
-				}, 30 * 1000);
 
 				return await interaction.editReply(
 					`User ${userMention(
@@ -184,3 +186,13 @@ module.exports = {
 		}
 	},
 };
+
+function removeGame(game, interaction) {
+	game = RouletteGames.get(interaction.channelId);
+	if (!game.inGame && !game.winner) {
+		console.log(`Remove RR with id of: ${interaction.channelId}`);
+
+		interaction.followUp(`Lobby was closed due to timeout`);
+		RouletteGames.delete(interaction.channelId);
+	}
+}

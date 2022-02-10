@@ -5,7 +5,7 @@ const { RouletteGames } = require('./games.js');
 
 let isOk = false;
 class RouletteGame {
-	constructor(id) {
+	constructor(id, timeout) {
 		this.id = id;
 		this.players = new Array();
 		this.round = 0;
@@ -17,6 +17,7 @@ class RouletteGame {
 		this.pos = 0;
 		this.type = -1;
 		this.timeoutable = false;
+		this.timeout = timeout;
 	}
 
 	addPlayer(player) {
